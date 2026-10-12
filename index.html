@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Private Hub Dashboard</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlByaXZhdGUgSHViIiwKICAic2hvcnRfbmFtZSI6ICJIdWIiLAogICJzdGFydF91cmwiOiAiaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBiMGYxOSIsCiAgInRoZW1lX2NvbG9yIjogIiMwYjBmMTkiCiB9">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 30, 46, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-purple: #7c3aed;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(124, 58, 237, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .update-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .update-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 18px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .card-title i {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .music-card .card-title i { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .study-card .card-title i { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .group-card .card-title i { background: rgba(124, 58, 237, 0.15); color: var(--accent-purple); }
+        .ai-card .card-title i { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .share-card .card-title i { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+        .habit-card .card-title i { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+
+        input, textarea, button, select {
+            outline: none;
+            border: none;
+            color: white;
+        }
+
+        .input-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:active { opacity: 0.8; }
+
+        .habit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .habit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .habit-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .habit-check {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .habit-check.done {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .habit-streak {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .timer-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 5px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-shapes"></i></div>
+            <div class="brand-text">
+                <h1>Private Hub</h1>
+                <p>v1.2.0 • Offline Native Dashboard</p>
+            </div>
+        </div>
+        <button class="update-btn" onclick="checkForUpdates()">
+            <i class="fa-solid fa-rotate-right"></i> Sync Update
+        </button>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="card music-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-music"></i> Audio Engine</div>
+                <span style="font-size:0.75rem; color:var(--text-muted)">Local / Streams</span>
+            </div>
+            <audio id="audioPlayer" controls style="width: 100%; height: 36px; border-radius: 8px; margin-top: 5px;"></audio>
+            <input type="file" id="musicInput" accept="audio/*" style="display:none" onchange="loadAudio(event)">
+            <button class="btn-primary" onclick="document.getElementById('musicInput').click()" style="background: rgba(255,255,255,0.08);">
+                <i class="fa-solid fa-upload"></i> Load Local Track
+            </button>
+        </div>
+
+        <div class="card study-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-book-open"></i> Quick Notes</div>
+                <span id="saveStatus" style="font-size:0.7rem; color:var(--accent-green)">Saved</span>
+            </div>
+            <textarea id="notesArea" class="input-box" style="height: 100px; resize: none;" placeholder="Type study notes here... Auto saves to device." oninput="saveNotes()"></textarea>
+        </div>
+
+        <div class="card group-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-clock"></i> Focus Pomodoro</div>
+                <span id="pomoStatus" style="font-size:0.75rem; color:var(--accent-purple)">Ready</span>
+            </div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-controls">
+                <button class="btn-primary" onclick="toggleTimer()" id="startBtn">Start</button>
+                <button class="btn-primary" onclick="resetTimer()" style="background: rgba(255,255,255,0.08)">Reset</button>
+            </div>
+        </div>
+
+        <div class="card habit-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-fire"></i> Habit Tracker</div>
+                <span style="font-size:0.75rem; color:var(--text-muted)">Daily Streak</span>
+            </div>
+            <div class="habit-list" id="habitList"></div>
+            <div style="display:flex; gap: 6px; margin-top: auto;">
+                <input type="text" id="newHabitInput" class="input-box" placeholder="New habit..." onkeypress="if(event.key==='Enter') addHabit()">
+                <button class="btn-primary" onclick="addHabit()" style="padding: 0 14px;"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>
+
+        <div class="card ai-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Prompt Deck</div>
+            </div>
+            <input type="text" id="aiInput" class="input-box" placeholder="Write query / prompt draft...">
+            <button class="btn-primary" onclick="copyAIPrompt()" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-blue))">
+                <i class="fa-solid fa-copy"></i> Copy Prompt
+            </button>
+        </div>
+
+        <div class="card share-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-share-nodes"></i> Local Sync</div>
+                <span style="font-size:0.75rem; color:var(--text-muted)">P2P Ready</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Share live study room link directly with friends on WhatsApp.</p>
+            <button class="btn-primary" onclick="shareRoomLink()" style="background: rgba(236, 72, 153, 0.2); border: 1px solid rgba(236, 72, 153, 0.4);">
+                <i class="fa-solid fa-paper-plane"></i> Share Link
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Private Mobile Dashboard • Local Storage Active</p>
+    </footer>
+
+    <script>
+        function checkForUpdates() {
+            if (navigator.onLine) {
+                location.reload(true);
+            } else {
+                alert("You are offline. Running on cached local app!");
+            }
+        }
+
+        const notesArea = document.getElementById('notesArea');
+        const saveStatus = document.getElementById('saveStatus');
+
+        notesArea.value = localStorage.getItem('hub_notes') || '';
+
+        function saveNotes() {
+            localStorage.setItem('hub_notes', notesArea.value);
+            saveStatus.innerText = "Saving...";
+            setTimeout(() => { saveStatus.innerText = "Saved"; }, 500);
+        }
+
+        function loadAudio(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = URL.createObjectURL(file);
+                audioPlayer.play();
+            }
+        }
+
+        let timerSeconds = 1500;
+        let timerInterval = null;
+
+        function updateDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            const startBtn = document.getElementById('startBtn');
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                startBtn.innerText = "Start";
+                document.getElementById('pomoStatus').innerText = "Paused";
+            } else {
+                document.getElementById('pomoStatus').innerText = "Focusing";
+                startBtn.innerText = "Pause";
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        alert("Pomodoro complete! Time for a break.");
+                        resetTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 1500;
+            updateDisplay();
+            document.getElementById('startBtn').innerText = "Start";
+            document.getElementById('pomoStatus').innerText = "Ready";
+        }
+
+        let habits = JSON.parse(localStorage.getItem('hub_habits')) || [
+            { id: 1, text: "Study 30 mins", streak: 3, done: false },
+            { id: 2, text: "Drink 2L Water", streak: 5, done: true }
+        ];
+
+        function renderHabits() {
+            const list = document.getElementById('habitList');
+            list.innerHTML = '';
+            habits.forEach(h => {
+                const item = document.createElement('div');
+                item.className = 'habit-item';
+                item.innerHTML = `
+                    <div class="habit-info">
+                        <div class="habit-check ${h.done ? 'done' : ''}" onclick="toggleHabit(${h.id})">
+                            ${h.done ? '<i class="fa-solid fa-check" style="font-size:0.7rem;"></i>' : ''}
+                        </div>
+                        <span style="font-size:0.85rem; ${h.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${h.text}</span>
+                    </div>
+                    <div class="habit-streak"><i class="fa-solid fa-fire"></i> ${h.streak}</div>
+                `;
+                list.appendChild(item);
+            });
+            localStorage.setItem('hub_habits', JSON.stringify(habits));
+        }
+
+        function toggleHabit(id) {
+            habits = habits.map(h => {
+                if (h.id === id) {
+                    const newDone = !h.done;
+                    return { ...h, done: newDone, streak: newDone ? h.streak + 1 : Math.max(0, h.streak - 1) };
+                }
+                return h;
+            });
+            renderHabits();
+        }
+
+        function addHabit() {
+            const input = document.getElementById('newHabitInput');
+            if (input.value.trim()) {
+                habits.push({ id: Date.now(), text: input.value.trim(), streak: 0, done: false });
+                input.value = '';
+                renderHabits();
+            }
+        }
+
+        function copyAIPrompt() {
+            const val = document.getElementById('aiInput').value;
+            if (val) {
+                navigator.clipboard.writeText(val);
+                alert("Prompt copied to clipboard!");
+            }
+        }
+
+        function shareRoomLink() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join my Study Hub',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Link copied to clipboard! Paste it on WhatsApp.");
+            }
+        }
+
+        renderHabits();
+    </script>
+</body>
+</html>
